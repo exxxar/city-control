@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Ваше обращение зарегистрировано</h2>
+    <p>Здравствуйте, <b>{{ user_name }}</b>!</p>
+    <p>Ваша проблема успешно зарегистрирована в системе.</p>
+    <ul>
+        <li><b>Номер:</b> {{ problem_public_id }}</li>
+        <li><b>Заголовок:</b> {{ problem_title }}</li>
+        <li><b>Категория:</b> {{ category_name }}</li>
+    </ul>
+    <p>Мы уже передали его на рассмотрение модераторам. Вы можете отслеживать статус в приложении.</p>
+    <p style="text-align: center;">
+        <a href="{{ app_url }}/problems/{{ problem_public_id }}" class="btn">Открыть карточку</a>
+    </p>
+{% endblock %}

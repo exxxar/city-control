@@ -1,0 +1,27 @@
+/* client/src/assets/styles/typography.css */
+.text-civic { color: var(--civic-primary) !important; }
+.text-civic-dark { color: var(--civic-primary-dark) !important; }
+.text-success { color: var(--civic-success) !important; }
+.text-warning { color: var(--civic-warning) !important; }
+.text-danger { color: var(--civic-danger) !important; }
+
+.fw-light { font-weight: 300 !important; }
+.fw-normal { font-weight: 400 !important; }
+.fw-medium { font-weight: 500 !important; }
+.fw-semibold { font-weight: 600 !important; }
+.fw-bold { font-weight: 700 !important; }
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.small, small {
+  font-size: var(--font-size-sm);
+}
+
+.display-1 { font-size: 3.5rem; font-weight: 700; }
+.display-2 { font-size: 3rem; font-weight: 700; }
+.display-3 { font-size: 2.5rem; font-weight: 700; }
+.display-4 { font-size: 2rem; font-weight: 700; }

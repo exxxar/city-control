@@ -1,0 +1,15 @@
+{
+  "name": "city-under-control",
+  "version": "1.0.0",
+  "description": "Муниципальный сервис обработки жалоб граждан",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\"",
+    "dev:backend": "cd backend && poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd client && npm install",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

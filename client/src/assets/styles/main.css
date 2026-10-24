@@ -1,0 +1,142 @@
+/* client/src/assets/styles/main.css */
+
+/* === Базовые мобильные стили === */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 168, 150, 0.2);
+}
+
+body {
+  /* Предотвращаем горизонтальный скролл */
+  overflow-x: hidden;
+  /* Убираем "прыжки" при открытии клавиатуры на iOS */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+#app {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === Safe area для iPhone с "чёлкой" === */
+@supports (padding: max(0px)) {
+  .app-layout {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .app-bottom-nav {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* === Мобильная типографика === */
+@media (max-width: 767.98px) {
+  h1, .h1 { font-size: 1.75rem; }
+  h2, .h2 { font-size: 1.5rem; }
+  h3, .h3 { font-size: 1.25rem; }
+  h4, .h4 { font-size: 1.125rem; }
+  h5, .h5 { font-size: 1rem; }
+
+  body {
+    font-size: 15px;
+  }
+}
+
+/* === Мобильные кнопки (больше зона клика) === */
+@media (max-width: 767.98px) {
+  .btn {
+    min-height: 44px; /* Apple Human Interface Guidelines */
+    padding: 0.625rem 1rem;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+  }
+
+  /* Увеличиваем зону клика для иконок */
+  .nav-link-custom,
+  .hover-bg {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* === Мобильные формы === */
+@media (max-width: 767.98px) {
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Предотвращает автозум на iOS */
+    min-height: 44px;
+  }
+
+  .input-group-text {
+    min-height: 44px;
+  }
+}
+
+/* === Мобильные карточки === */
+@media (max-width: 767.98px) {
+  .card {
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* === Мобильные модалки === */
+@media (max-width: 767.98px) {
+  .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100%;
+  }
+
+  .modal-content {
+    border-radius: 0;
+    height: 100%;
+  }
+}
+
+/* === Мобильные таблицы → карточки === */
+@media (max-width: 767.98px) {
+  .table-responsive-mobile {
+    display: block;
+  }
+
+  .table-responsive-mobile thead {
+    display: none;
+  }
+
+  .table-responsive-mobile tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .table-responsive-mobile tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f8f9fa;
+  }
+
+  .table-responsive-mobile tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6c757d;
+    margin-right: 1rem;
+  }
+}
