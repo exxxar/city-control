@@ -1,6 +1,7 @@
 // client/src/stores/problems.store.js
 import { defineStore } from 'pinia'
 import * as problemsApi from '@/api/problems.api'
+import {getProblemReportAsWord} from "../api/problems.api.js";
 
 export const useProblemsStore = defineStore('problems', {
   state: () => ({
@@ -71,17 +72,70 @@ export const useProblemsStore = defineStore('problems', {
       }
     },
 
-    async fetchMyProblems() {
+
+    async fetchMyProblems(params = {}) {
       this.isLoading = true
       this.error = null
+
       try {
-        const response = await problemsApi.getMyProblems()
-        this.myProblems = response.items || response
+        const response = await problemsApi.getMyProblems(params)
+
+        // Поддерживаем Axios-ответ и уже распакованный ответ API.
+        const payload = response?.data ?? response
+
+        const items = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.items)
+                ? payload.items
+                : []
+
+        this.myProblems = items
+
+        // Сохраняем пагинацию, если сервер вернул её.
+        if (!Array.isArray(payload)) {
+          this.pagination = {
+            total: payload?.total ?? items.length,
+            page: payload?.page ?? params.page ?? 1,
+            per_page: payload?.per_page ?? params.per_page ?? 10,
+            pages: payload?.pages ?? (items.length ? 1 : 0)
+          }
+        }
+
+        // Важно: возвращаем данные компоненту.
+        return payload
       } catch (err) {
-        this.error = err.response?.data?.detail || 'Ошибка загрузки моих проблем'
-        console.error('Failed to fetch my problems:', err)
+        this.error =
+            err.response?.data?.detail ||
+            'Ошибка загрузки моих обращений'
+
+        console.error(
+            '[ProblemsStore] Ошибка загрузки моих обращений:',
+            err.response?.data ?? err
+        )
+
+        throw err
       } finally {
         this.isLoading = false
+      }
+    },
+
+
+    async downloadReport(problemId) {
+      this.error = null
+
+      try {
+        return await problemsApi.getProblemReportAsWord(problemId)
+      } catch (err) {
+        this.error =
+            err.response?.data?.detail ||
+            'Не удалось скачать отчёт'
+
+        console.error(
+            '[ProblemsStore] Ошибка скачивания DOCX:',
+            err.response?.data ?? err
+        )
+
+        throw err
       }
     },
 

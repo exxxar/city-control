@@ -28,7 +28,7 @@
         <h3 class="contact-title">Телефон</h3>
         <p class="contact-description">Позвоните нам в рабочее время</p>
         <a href="tel:+74951234567" class="contact-link">
-          +7 (495) 123-45-67
+          +7 (949) 374 90 56
           <i class="fas fa-arrow-right ms-2"></i>
         </a>
       </div>
@@ -40,8 +40,8 @@
         <h3 class="contact-title">Адрес</h3>
         <p class="contact-description">Приходите к нам в офис</p>
         <div class="contact-address">
-          г. Подольск,<br>
-          ул. Ленина, д. 10
+          г. Донецк,<br>
+          пр. Театральный, 13, ауд. 416
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@
         <div class="info-content">
           <div class="schedule-row">
             <span class="schedule-day">Понедельник - Пятница</span>
-            <span class="schedule-time">9:00 - 18:00</span>
+            <span class="schedule-time">9:00 - 17:00</span>
           </div>
           <div class="schedule-row">
             <span class="schedule-day">Суббота - Воскресенье</span>

@@ -1,6 +1,6 @@
 <!-- client/src/views/public/PrivacyView.vue -->
 <template>
-  <PublicLayout>
+
     <div class="container py-5">
       <div class="row justify-content-center">
         <div class="col-12 col-md-8">
@@ -52,7 +52,7 @@
         </div>
       </div>
     </div>
-  </PublicLayout>
+
 </template>
 
 <script>

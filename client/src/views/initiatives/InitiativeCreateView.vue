@@ -1,4 +1,3 @@
-<!-- client/src/views/initiatives/InitiativeCreateView.vue -->
 <template>
   <div class="form-page-container">
     <!-- Современный заголовок -->
@@ -63,27 +62,47 @@
           </div>
         </div>
 
-        <!-- Секция 2: Детали и медиа -->
+        <!-- Секция 2: Локация и медиа -->
         <div class="form-section">
           <h3 class="section-title">
-            <IconFa name="map-location-dot" class="me-2" /> Детали и материалы
+            <IconFa name="map-location-dot" class="me-2" /> Место реализации
           </h3>
 
           <div class="form-group">
-            <label class="form-label">Территория</label>
-            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.territory_id }">
-              <span class="input-icon"><IconFa name="map" /></span>
-              <select v-model="form.territory_id" class="form-control-custom form-select-custom">
-                <option value="">Выберите территорию (необязательно)</option>
-                <option v-for="terr in territories" :key="terr.id" :value="terr.id">
-                  {{ terr.name }}
-                </option>
-              </select>
+            <label class="form-label">Адрес или ориентир *</label>
+            <div class="input-wrapper search-wrapper" :class="{ 'is-invalid': localErrors.address }">
+              <span class="input-icon"><IconFa name="magnifying-glass" /></span>
+              <input
+                  v-model="form.address"
+                  type="text"
+                  class="form-control-custom"
+                  placeholder="Введите адрес, парк или ориентир..."
+                  @keyup.enter.prevent="searchAddress"
+              >
+              <button
+                  type="button"
+                  class="btn-search-map"
+                  @click="searchAddress"
+                  :disabled="isSearching || !form.address.trim()"
+              >
+                <span v-if="isSearching" class="spinner-border spinner-border-sm"></span>
+                <IconFa v-else name="location-crosshairs" />
+              </button>
             </div>
-            <div v-if="localErrors.territory_id" class="error-message">{{ localErrors.territory_id }}</div>
+            <div v-if="localErrors.address" class="error-message">{{ localErrors.address }}</div>
+            <p class="form-hint">Найдите адрес или укажите точку прямо на карте ниже.</p>
           </div>
 
-          <div class="form-group">
+          <!-- Контейнер карты -->
+          <div class="map-container" :class="{ 'is-invalid': localErrors.latitude }">
+            <div id="initiative-map" class="map-view"></div>
+            <button type="button" class="btn-geo-location" @click="getCurrentLocation" title="Моё местоположение">
+              <IconFa name="crosshairs" />
+            </button>
+          </div>
+          <div v-if="localErrors.latitude" class="error-message">Пожалуйста, укажите точку на карте</div>
+
+          <div class="form-group mt-4">
             <label class="form-label">Фотографии или документы</label>
             <p class="text-muted small mb-2">Прикрепите эскизы, фотографии места или другие материалы</p>
             <MediaUploader
@@ -109,10 +128,11 @@
 </template>
 
 <script>
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import IconFa from '@/components/ui/IconFa.vue'
 import MediaUploader from '@/components/media/MediaUploader.vue'
 import { useInitiativesStore } from '@/stores/initiatives.store'
-import * as mapsApi from '@/api/maps.api'
 
 export default {
   name: 'InitiativeCreateView',
@@ -122,27 +142,134 @@ export default {
       form: {
         title: '',
         description: '',
-        territory_id: ''
+        address: '',
+        latitude: null,
+        longitude: null
       },
-      territories: [],
       files: [],
       localErrors: {},
       validationError: '',
       submitError: '',
-      isSubmitting: false
+      isSubmitting: false,
+      isSearching: false,
+      map: null,
+      marker: null
     }
   },
-  async mounted() {
-    await this.loadTerritories()
+  mounted() {
+    this.initMap()
+  },
+  beforeUnmount() {
+    if (this.map) {
+      this.map.remove()
+    }
   },
   methods: {
-    async loadTerritories() {
+    initMap() {
+      // Инициализация карты (центр по умолчанию, например, Москва, или можно запросить геопозицию)
+      this.map = L.map('initiative-map').setView([55.7558, 37.6173], 10)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(this.map)
+
+      // Обработка клика по карте
+      this.map.on('click', (e) => {
+        this.setMarker(e.latlng.lat, e.latlng.lng)
+        this.reverseGeocode(e.latlng.lat, e.latlng.lng)
+      })
+
+      // Попытка определить геопозицию пользователя при загрузке
+      this.getCurrentLocation()
+    },
+
+    async searchAddress() {
+      if (!this.form.address.trim()) return
+
+      this.isSearching = true
+      this.localErrors.address = ''
+
       try {
-        const response = await mapsApi.getTerritories()
-        this.territories = response.data || response || []
+        // Используем бесплатный Nominatim API для геокодинга
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.form.address)}&limit=1`
+        )
+        const data = await response.json()
+
+        if (data && data.length > 0) {
+          const result = data[0]
+          this.form.latitude = parseFloat(result.lat)
+          this.form.longitude = parseFloat(result.lon)
+          this.form.address = result.display_name // Обновляем на канонический адрес
+
+          this.map.setView([this.form.latitude, this.form.longitude], 16)
+          this.setMarker(this.form.latitude, this.form.longitude)
+        } else {
+          this.localErrors.address = 'Адрес не найден. Попробуйте уточнить запрос или укажите точку на карте.'
+        }
       } catch (error) {
-        console.error('Failed to load territories:', error)
+        console.error('Geocoding error:', error)
+        this.localErrors.address = 'Ошибка поиска адреса. Попробуйте позже.'
+      } finally {
+        this.isSearching = false
       }
+    },
+
+    setMarker(lat, lng) {
+      this.form.latitude = lat
+      this.form.longitude = lng
+      this.localErrors.latitude = ''
+
+      if (this.marker) {
+        this.marker.setLatLng([lat, lng])
+      } else {
+        this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map)
+
+        // Если пользователь перетащил маркер вручную
+        this.marker.on('dragend', (event) => {
+          const position = event.target.getLatLng()
+          this.form.latitude = position.lat
+          this.form.longitude = position.lng
+          this.reverseGeocode(position.lat, position.lng)
+        })
+      }
+    },
+
+    async reverseGeocode(lat, lng) {
+      try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+        )
+        const data = await response.json()
+        if (data && data.display_name) {
+          this.form.address = data.display_name
+        }
+      } catch (error) {
+        console.error('Reverse geocoding error:', error)
+      }
+    },
+
+    getCurrentLocation() {
+      if (!navigator.geolocation) {
+        this.localErrors.address = 'Геолокация не поддерживается вашим браузером'
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords
+            this.form.latitude = latitude
+            this.form.longitude = longitude
+            this.map.setView([latitude, longitude], 15)
+            this.setMarker(latitude, longitude)
+            this.reverseGeocode(latitude, longitude)
+          },
+          () => {
+            // Если пользователь запретил доступ, просто игнорируем или показываем мягкое сообщение
+            console.log('Geolocation permission denied')
+          }
+      )
     },
 
     onFilesSelected(files) {
@@ -162,6 +289,14 @@ export default {
         this.localErrors.description = 'Введите описание инициативы'
         isValid = false
       }
+      if (!this.form.address.trim()) {
+        this.localErrors.address = 'Укажите адрес или место'
+        isValid = false
+      }
+      if (!this.form.latitude || !this.form.longitude) {
+        this.localErrors.latitude = 'Пожалуйста, укажите точку на карте'
+        isValid = false
+      }
 
       if (!isValid) {
         this.validationError = 'Пожалуйста, проверьте правильность заполнения выделенных полей'
@@ -171,7 +306,14 @@ export default {
     },
 
     async submitInitiative() {
-      if (!this.validateForm()) return
+      if (!this.validateForm()) {
+        // Прокрутка к первой ошибке
+        this.$nextTick(() => {
+          const firstError = document.querySelector('.is-invalid')
+          if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        })
+        return
+      }
 
       this.isSubmitting = true
       this.submitError = ''
@@ -180,15 +322,16 @@ export default {
       try {
         const initiativesStore = useInitiativesStore()
 
-        // Подготовка данных (в реальном проекте здесь может быть FormData)
         const payload = {
-          ...this.form,
-          // Если territory_id пустая строка, превращаем в null
-          territory_id: this.form.territory_id || null
+          title: this.form.title,
+          description: this.form.description,
+          address: this.form.address,
+          latitude: this.form.latitude,
+          longitude: this.form.longitude
+          // files будут обработаны в сторе через FormData
         }
 
-        await initiativesStore.createInitiative(payload)
-
+        await initiativesStore.createInitiative(payload, this.files)
         this.$router.push('/initiatives')
       } catch (error) {
         console.error('Create initiative error:', error)
@@ -209,10 +352,7 @@ export default {
   padding: 2rem 1rem;
 }
 
-.page-header-modern {
-  margin-bottom: 1.5rem;
-}
-
+.page-header-modern { margin-bottom: 1.5rem; }
 .page-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -222,11 +362,7 @@ export default {
   display: flex;
   align-items: center;
 }
-
-.text-civic {
-  color: #00a896;
-}
-
+.text-civic { color: #00a896; }
 .page-subtitle {
   color: #70808c;
   font-size: 0.95rem;
@@ -273,6 +409,12 @@ export default {
   font-size: 0.88rem;
   font-weight: 700;
 }
+.form-hint {
+  font-size: 0.82rem;
+  color: var(--layout-muted);
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+}
 
 .input-wrapper {
   display: flex;
@@ -307,7 +449,7 @@ export default {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 0.85rem 1rem 0.85rem 0;
+  padding: 0.85rem 0.5rem 0.85rem 0;
   color: var(--layout-ink);
   font-size: 0.95rem;
   width: 100%;
@@ -316,16 +458,6 @@ export default {
 .form-control-custom:focus { outline: none; box-shadow: none; }
 .form-control-custom::placeholder { color: #aab5bc; }
 
-.form-select-custom {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2370808c' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 16px 12px;
-  padding-right: 2.5rem;
-}
-
 .textarea-wrapper { align-items: flex-start; }
 .char-count {
   text-align: right;
@@ -333,6 +465,81 @@ export default {
   color: var(--layout-muted);
   margin-top: 0.35rem;
 }
+
+/* === Кнопка поиска в инпуте === */
+.btn-search-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--layout-accent);
+  cursor: pointer;
+  transition: all 180ms ease;
+  flex-shrink: 0;
+}
+.btn-search-map:hover:not(:disabled) {
+  background: rgba(0, 168, 150, 0.08);
+}
+.btn-search-map:disabled {
+  color: var(--layout-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* === Карта === */
+.map-container {
+  position: relative;
+  border: 1px solid var(--layout-line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fcfcfd;
+  transition: all 180ms ease;
+  height: 350px;
+}
+.map-container:focus-within, .map-container:hover {
+  border-color: var(--layout-accent);
+  box-shadow: 0 0 0 4px rgba(0, 168, 150, 0.1);
+}
+.map-container.is-invalid {
+  border-color: #c64752;
+  background: #fff0f1;
+}
+
+.map-view {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Кнопка геолокации на карте */
+.btn-geo-location {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: var(--layout-ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms ease;
+}
+.btn-geo-location:hover {
+  background: var(--layout-accent);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+/* === Ошибки и действия === */
 .error-message {
   margin-top: 0.4rem;
   color: #c64752;
@@ -340,7 +547,6 @@ export default {
   font-weight: 600;
 }
 
-/* === Ошибки и действия === */
 .validation-error-banner {
   display: flex;
   align-items: center;
@@ -386,5 +592,6 @@ export default {
   .form-page-container { padding: 1.5rem 1rem; }
   .modern-form { padding: 1.5rem 1.25rem; border-radius: 16px; }
   .page-title { font-size: 1.5rem; }
+  .map-container { height: 250px; }
 }
 </style>

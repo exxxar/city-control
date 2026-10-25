@@ -28,6 +28,14 @@
       <IconFa name="geo-alt-fill" size="1.25rem" color="var(--civic-primary)" />
     </button>
 
+    <!-- === НОВАЯ КНОПКА МОНИТОРИНГА (справа внизу, над кнопкой геолокации) === -->
+    <div class="map-controls-bottom-right">
+      <ProximityMonitor
+          :is-watching="proximityAlert.isWatching"
+          @toggle="handleProximityToggle"
+      />
+    </div>
+
     <!-- Loading overlay -->
     <div v-if="isLoading" class="loading-overlay">
       <div class="spinner-border text-civic" role="status">
@@ -39,14 +47,35 @@
 
 <script>
 import CityMap from '@/components/map/CityMap.vue'
+import ProximityMonitor from '@/components/map/ProximityMonitor.vue' // <-- ИМПОРТ
 import ProblemBottomSheet from '@/components/map/ProblemBottomSheet.vue'
 import IconFa from '@/components/ui/IconFa.vue'
 import { useMapStore } from '@/stores/map.store'
-import { useProblemsStore } from '@/stores/problems.store'
+import { useProblemsStore } from
+import { useProximityAlert } from '@/composables/useProximityAlert'
+import {computed, onUnmounted} from "vue"; // <-- ИМПОРТ
 
 export default {
   name: 'MapView',
-  components: { CityMap, ProblemBottomSheet, IconFa },
+  components: { CityMap, ProblemBottomSheet, IconFa,ProximityMonitor },
+  setup() {
+    const problemsStore = useProblemsStore()
+
+    // Инициализируем composable, передавая ему список проблем и радиус 150 метров
+    const proximityAlert = useProximityAlert(
+        computed(() => problemsStore.problems),
+        150
+    )
+
+    // Очищаем память при уходе со страницы
+    onUnmounted(() => {
+      proximityAlert.stopWatching()
+    })
+
+    return {
+      proximityAlert
+    }
+  },
   data() {
     return {
       mapInstance: null,

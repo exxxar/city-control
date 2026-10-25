@@ -1,6 +1,6 @@
 <!-- client/src/views/public/AboutView.vue -->
 <template>
-  <PublicLayout>
+
     <div class="container py-5">
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 text-center">
@@ -42,7 +42,7 @@
                   <IconFa name="calendar-alt" size="2rem" color="var(--civic-primary)" />
                   <h5 class="mt-3 fw-bold">Год</h5>
                   <p class="text-muted small mb-0">
-                    2024-2025 учебный год
+                    2025-2026 учебный год
                   </p>
                 </div>
               </div>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-12 col-md-4">
                   <IconFa name="telegram" class="me-2" color="var(--civic-primary)" />
-                  <a href="#" class="text-decoration-none">Telegram</a>
+                  <a href="https://t.me/Yura2896" class="text-decoration-none">@Yura2896 (TG)</a>
                 </div>
               </div>
             </div>
@@ -71,7 +71,7 @@
         </div>
       </div>
     </div>
-  </PublicLayout>
+
 </template>
 
 <script>

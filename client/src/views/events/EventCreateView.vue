@@ -1,156 +1,187 @@
 <!-- client/src/views/events/EventCreateView.vue -->
 <template>
+  <div class="form-container pt-5">
 
-
-    <div class="form-container">
-      <form @submit.prevent="submitEvent" class="modern-form">
-
-        <!-- Баннер ошибки -->
-        <Transition name="fade">
-          <div v-if="validationError || submitError" class="validation-error-banner">
-            <IconFa name="circle-exclamation" class="me-2" />
-            {{ validationError || submitError }}
-          </div>
-        </Transition>
-
-        <!-- Секция 1: Основная информация -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <IconFa name="circle-info" class="me-2" /> Основная информация
-          </h3>
-
-          <div class="form-group">
-            <label class="form-label">Название мероприятия *</label>
-            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.title }">
-              <span class="input-icon"><IconFa name="heading" /></span>
-              <input
-                  v-model="form.title"
-                  type="text"
-                  class="form-control-custom"
-                  placeholder="Например: Субботник в центральном парке"
-                  maxlength="255"
-                  required
-              >
-            </div>
-            <div v-if="localErrors.title" class="error-message">{{ localErrors.title }}</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Тип мероприятия *</label>
-            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.event_type }">
-              <span class="input-icon"><IconFa name="tag" /></span>
-              <select v-model="form.event_type" class="form-control-custom form-select-custom" required>
-                <option value="" disabled>Выберите тип</option>
-                <option value="subbotnik">Субботник</option>
-                <option value="meeting">Собрание граждан</option>
-                <option value="exhibition">Выставка</option>
-                <option value="concert">Концерт</option>
-                <option value="fair">Ярмарка</option>
-                <option value="action">Общественная акция</option>
-                <option value="other">Другое</option>
-              </select>
-            </div>
-            <div v-if="localErrors.event_type" class="error-message">{{ localErrors.event_type }}</div>
-          </div>
-        </div>
-
-        <!-- Секция 2: Время и место -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <IconFa name="calendar-days" class="me-2" /> Время и место
-          </h3>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Дата и время начала *</label>
-              <div class="input-wrapper" :class="{ 'is-invalid': localErrors.start_date }">
-                <span class="input-icon"><IconFa name="clock" /></span>
-                <input v-model="form.start_date" type="datetime-local" class="form-control-custom" required>
-              </div>
-              <div v-if="localErrors.start_date" class="error-message">{{ localErrors.start_date }}</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Дата и время окончания</label>
-              <div class="input-wrapper" :class="{ 'is-invalid': localErrors.end_date }">
-                <span class="input-icon"><IconFa name="clock" /></span>
-                <input v-model="form.end_date" type="datetime-local" class="form-control-custom">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Место проведения *</label>
-            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.location_text }">
-              <span class="input-icon"><IconFa name="map-location-dot" /></span>
-              <input
-                  v-model="form.location_text"
-                  type="text"
-                  class="form-control-custom"
-                  placeholder="Адрес или описание места (например: Парк культуры, у главного входа)"
-                  required
-              >
-            </div>
-            <div v-if="localErrors.location_text" class="error-message">{{ localErrors.location_text }}</div>
-          </div>
-        </div>
-
-        <!-- Секция 3: Детали и медиа -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <IconFa name="users" class="me-2" /> Детали и материалы
-          </h3>
-
-          <div class="form-group">
-            <label class="form-label">Ожидаемое количество участников</label>
-            <div class="input-wrapper">
-              <span class="input-icon"><IconFa name="users" /></span>
-              <input
-                  v-model="form.expected_participants"
-                  type="number"
-                  class="form-control-custom"
-                  placeholder="Например: 50"
-                  min="1"
-              >
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Описание мероприятия</label>
-            <div class="input-wrapper textarea-wrapper">
-              <span class="input-icon textarea-icon"><IconFa name="align-left" /></span>
-              <textarea
-                  v-model="form.description"
-                  class="form-control-custom"
-                  rows="5"
-                  placeholder="Расскажите о целях, программе, необходимых ресурсах..."
-                  maxlength="2000"
-              ></textarea>
-            </div>
-            <div class="char-count">{{ form.description.length }}/2000</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Фотографии или документы</label>
-            <MediaUploader
-                :multiple="true"
-                :max-files="5"
-                @files-selected="onFilesSelected"
-            />
-          </div>
-        </div>
-
-        <!-- Кнопка отправки -->
-        <div class="form-actions">
-          <button type="submit" class="btn-submit-primary" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-            <IconFa v-else name="paper-plane" class="me-2" />
-            {{ isSubmitting ? 'Отправка заявки...' : 'Подать заявку' }}
-          </button>
-        </div>
-
-      </form>
+    <!-- === ЗАГОЛОВОК СТРАНИЦЫ === -->
+    <div class="page-header-modern">
+      <div>
+        <h2 class="page-title">
+          <IconFa name="calendar-plus" class="me-2 text-civic" />
+          Предложить мероприятие
+        </h2>
+        <p class="page-subtitle">
+          Заполните форму, чтобы организовать событие для жителей вашего района или города.
+        </p>
+      </div>
     </div>
 
+    <form @submit.prevent="submitEvent" class="modern-form">
+
+      <!-- Баннер ошибки -->
+      <Transition name="fade">
+        <div v-if="validationError || submitError" class="validation-error-banner">
+          <IconFa name="circle-exclamation" class="me-2" />
+          {{ validationError || submitError }}
+        </div>
+      </Transition>
+
+      <!-- Секция 1: Основная информация -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <IconFa name="circle-info" class="me-2" /> Основная информация
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label">Название мероприятия *</label>
+          <div class="input-wrapper" :class="{ 'is-invalid': localErrors.title }">
+            <span class="input-icon"><IconFa name="heading" /></span>
+            <input
+                v-model="form.title"
+                type="text"
+                class="form-control-custom"
+                placeholder="Например: Субботник в центральном парке"
+                maxlength="255"
+                required
+            >
+          </div>
+          <div v-if="localErrors.title" class="error-message">{{ localErrors.title }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Тип мероприятия *</label>
+
+          <div
+              class="event-type-grid"
+              :class="{ 'event-type-grid-invalid': localErrors.event_type }"
+              role="radiogroup"
+              aria-label="Тип мероприятия"
+          >
+            <button
+                v-for="type in eventTypes"
+                :key="type.value"
+                type="button"
+                class="event-type-card"
+                :class="{ 'event-type-card-selected': form.event_type === type.value }"
+                role="radio"
+                :aria-checked="form.event_type === type.value"
+                @click="form.event_type = type.value; localErrors.event_type = ''"
+            >
+              <span class="event-type-icon">
+                <IconFa :name="type.icon" />
+              </span>
+              <span class="event-type-label">{{ type.label }}</span>
+              <span
+                  v-if="form.event_type === type.value"
+                  class="event-type-check"
+              >
+                <IconFa name="check" />
+              </span>
+            </button>
+          </div>
+
+          <div v-if="localErrors.event_type" class="error-message">
+            {{ localErrors.event_type }}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Секция 2: Время и место -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <IconFa name="calendar-days" class="me-2" /> Время и место
+        </h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Дата и время начала *</label>
+            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.start_date }">
+              <span class="input-icon"><IconFa name="clock" /></span>
+              <input v-model="form.start_date" type="datetime-local" class="form-control-custom" required>
+            </div>
+            <div v-if="localErrors.start_date" class="error-message">{{ localErrors.start_date }}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Дата и время окончания</label>
+            <div class="input-wrapper" :class="{ 'is-invalid': localErrors.end_date }">
+              <span class="input-icon"><IconFa name="clock" /></span>
+              <input v-model="form.end_date" type="datetime-local" class="form-control-custom">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Место проведения *</label>
+          <div class="input-wrapper" :class="{ 'is-invalid': localErrors.location_text }">
+            <span class="input-icon"><IconFa name="map-location-dot" /></span>
+            <input
+                v-model="form.location_text"
+                type="text"
+                class="form-control-custom"
+                placeholder="Адрес или описание места (например: Парк культуры, у главного входа)"
+                required
+            >
+          </div>
+          <div v-if="localErrors.location_text" class="error-message">{{ localErrors.location_text }}</div>
+        </div>
+      </div>
+
+      <!-- Секция 3: Детали и медиа -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <IconFa name="users" class="me-2" /> Детали и материалы
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label">Ожидаемое количество участников</label>
+          <div class="input-wrapper">
+            <span class="input-icon"><IconFa name="users" /></span>
+            <input
+                v-model="form.expected_participants"
+                type="number"
+                class="form-control-custom"
+                placeholder="Например: 50"
+                min="1"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание мероприятия</label>
+          <div class="input-wrapper textarea-wrapper">
+            <span class="input-icon textarea-icon"><IconFa name="align-left" /></span>
+            <textarea
+                v-model="form.description"
+                class="form-control-custom"
+                rows="5"
+                placeholder="Расскажите о целях, программе, необходимых ресурсах..."
+                maxlength="2000"
+            ></textarea>
+          </div>
+          <div class="char-count">{{ form.description.length }}/2000</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Фотографии или документы</label>
+          <MediaUploader
+              :multiple="true"
+              :max-files="5"
+              @files-selected="onFilesSelected"
+          />
+        </div>
+      </div>
+
+      <!-- Кнопка отправки -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit-primary" :disabled="isSubmitting">
+          <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          <IconFa v-else name="paper-plane" class="me-2" />
+          {{ isSubmitting ? 'Отправка заявки...' : 'Подать заявку' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
 </template>
 
 <script>
@@ -173,6 +204,44 @@ export default {
         expected_participants: '',
         description: ''
       },
+
+      eventTypes: [
+        {
+          value: 'subbotnik',
+          label: 'Субботник',
+          icon: 'leaf'
+        },
+        {
+          value: 'meeting',
+          label: 'Собрание граждан',
+          icon: 'users'
+        },
+        {
+          value: 'exhibition',
+          label: 'Выставка',
+          icon: 'palette'
+        },
+        {
+          value: 'concert',
+          label: 'Концерт',
+          icon: 'music'
+        },
+        {
+          value: 'fair',
+          label: 'Ярмарка',
+          icon: 'store'
+        },
+        {
+          value: 'action',
+          label: 'Общественная акция',
+          icon: 'handshake'
+        },
+        {
+          value: 'other',
+          label: 'Другое',
+          icon: 'shapes'
+        }
+      ],
       files: [],
       localErrors: {},
       validationError: '',
@@ -227,7 +296,7 @@ export default {
       try {
         const eventsStore = useEventsStore()
 
-        // Подготовка данных (в реальном проекте здесь может быть FormData, если MediaUploader возвращает File объекты)
+        // Подготовка данных
         const payload = {
           ...this.form,
           start_date: new Date(this.form.start_date).toISOString(),
@@ -237,7 +306,7 @@ export default {
 
         await eventsStore.createEvent(payload)
 
-        // Перенаправляем на список мероприятий или в профиль
+        // Перенаправляем на список мероприятий
         this.$router.push('/events')
       } catch (error) {
         console.error('Create event error:', error)
@@ -262,20 +331,34 @@ export default {
   margin: 0 auto;
 }
 
-.page-header-modern { margin-bottom: 1.5rem; }
+/* === Заголовок страницы === */
+.page-header-modern {
+  margin-bottom: 1.5rem;
+  padding: 0 0.25rem;
+}
+
 .page-title {
   font-size: 1.75rem;
   font-weight: 800;
   color: var(--layout-ink);
   letter-spacing: -0.03em;
   margin: 0;
+  display: flex;
+  align-items: center; /* Выравнивание иконки и текста */
 }
+
+.text-civic {
+  color: var(--layout-accent);
+}
+
 .page-subtitle {
   color: var(--layout-muted);
   font-size: 0.95rem;
   margin: 0.25rem 0 0;
+  line-height: 1.5;
 }
 
+/* === Карточка формы === */
 .modern-form {
   background: #ffffff;
   border: 1px solid var(--layout-line);
@@ -426,9 +509,128 @@ export default {
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
+/* === Сетка типов мероприятий === */
+.event-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  transition: border-color 180ms ease, background-color 180ms ease;
+  border-radius: 14px;
+}
+
+@media (min-width: 576px) {
+  .event-type-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .event-type-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.event-type-grid-invalid {
+  border: 1px solid #c64752;
+  background: #fff0f1;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+/* === Карточка типа мероприятия === */
+.event-type-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.25rem 0.75rem;
+  background: #fcfcfd;
+  border: 1px solid var(--layout-line);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-type-card:hover {
+  border-color: var(--layout-accent);
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 168, 150, 0.08);
+}
+
+.event-type-card:focus-visible {
+  outline: 2px solid var(--layout-accent);
+  outline-offset: 2px;
+}
+
+.event-type-card-selected {
+  border-color: var(--layout-accent);
+  background: rgba(0, 168, 150, 0.04);
+  box-shadow: 0 0 0 1px var(--layout-accent), 0 4px 12px rgba(0, 168, 150, 0.12);
+}
+
+.event-type-icon {
+  font-size: 1.5rem;
+  color: var(--layout-muted);
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.event-type-card-selected .event-type-icon {
+  color: var(--layout-accent);
+  transform: scale(1.1);
+}
+
+.event-type-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--layout-ink);
+  line-height: 1.3;
+}
+
+.event-type-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--layout-accent);
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.event-type-card-selected .event-type-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* === Мобильная адаптация === */
 @media (max-width: 575.98px) {
-  .modern-form { padding: 1.5rem 1.25rem; border-radius: 16px; }
-  .page-title { font-size: 1.5rem; }
+  .page-header-modern {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .modern-form {
+    padding: 1.5rem 1.25rem;
+    border-radius: 16px;
+  }
 }
 </style>

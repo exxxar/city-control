@@ -1,26 +1,32 @@
-from fastapi import APIRouter, Depends
+# backend/app/api/routes/categories.py
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List
-
 from app.db.session import get_db
+
+# Убедитесь, что имя модели совпадает с вашим (IssueCategory или Category)
 from app.models.issue_category import IssueCategory
-from app.schemas.issue_category import IssueCategoryRead
 
 router = APIRouter()
 
-@router.get("/issue-categories", response_model=List[IssueCategoryRead], summary="Получить справочник категорий")
-def get_issue_categories(
-    type: int | None = None,  # Опциональный фильтр по типу (0, 1, 2)
-    db: Session = Depends(get_db)
+
+@router.get("")
+def get_categories(
+        type: int = Query(0, description="Тип категории: 0 - проблемы, 1 - решения, 2 - трудности"),
+        db: Session = Depends(get_db)
 ):
     """
-    Возвращает справочник категорий проблем, решений и трудностей.
-    Можно фильтровать по параметру type.
+    Возвращает список категорий. По умолчанию возвращает категории проблем (type=0).
     """
-    query = db.query(IssueCategory)
+    query = db.query(IssueCategory).filter(IssueCategory.type == type)
+    categories = query.all()
 
-    if type is not None:
-        query = query.filter(IssueCategory.type == type)
-
-    categories = query.order_by(IssueCategory.type, IssueCategory.id).all()
-    return categories
+    return [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "description": cat.description,
+            "icon": cat.icon,
+            "type": cat.type
+        }
+        for cat in categories
+    ]

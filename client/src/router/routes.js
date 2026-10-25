@@ -86,7 +86,7 @@ export const routes = [
   // === 4. ПУБЛИЧНЫЕ СТРАНИЦЫ (PublicLayout) ===
   {
     path: '/privacy',
-    component: PublicLayout,
+    component: LandingLayout,
     children: [
       {
         path: '',
@@ -98,7 +98,7 @@ export const routes = [
   },
   {
     path: '/terms',
-    component: PublicLayout,
+    component: LandingLayout,
     children: [
       {
         path: '',
@@ -110,7 +110,7 @@ export const routes = [
   },
   {
     path: '/about',
-    component: PublicLayout,
+    component: LandingLayout,
     children: [
       {
         path: '',
@@ -170,7 +170,7 @@ export const routes = [
   },
   {
     path: '/problems/:id',
-    component: PublicLayout,
+    component: LandingLayout,
     children: [
       {
         path: '',
@@ -182,7 +182,7 @@ export const routes = [
   },
   {
     path: '/objects/:id',
-    component: PublicLayout,
+    component: LandingLayout,
     children: [
       {
         path: '',
@@ -225,6 +225,7 @@ export const routes = [
       {
         path: '',
         name: 'ProblemDetails',
+        props: true,
         component: () => import('@/views/problems/ProblemDetailsView.vue'),
         meta: { requiresAuth: true, title: 'Детали проблемы' }
       }

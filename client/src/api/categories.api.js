@@ -5,9 +5,16 @@ import api from './http'
  * Получить список категорий (дерево)
  * @returns {Promise<Array>}
  */
-export async function getCategories() {
-  const response = await api.get('/categories')
-  return response.data
+export const getCategories = async (type = 0) => {
+  try {
+    // Если в http baseURL уже есть '/api', то путь будет '/categories'
+    // Если нет, используйте '/api/categories'
+    const response = await api.get(`/categories?type=${type}`)
+    return response.data
+  } catch (error) {
+    console.error('Ошибка загрузки категорий:', error)
+    throw error
+  }
 }
 
 

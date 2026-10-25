@@ -1,52 +1,43 @@
-// client/src/composables/useOfflineQueue.js
-import { computed } from 'vue'
-import { useOfflineQueueStore } from '@/stores/offlineQueue.store'
+import { ref } from 'vue'
+
+const DRAFTS_KEY = 'city_under_control_drafts'
 
 export function useOfflineQueue() {
-  const queueStore = useOfflineQueueStore()
-
-  const pendingCount = computed(() => queueStore.pendingItems.length)
-  const failedCount = computed(() => queueStore.failedItems.length)
-  const isOnline = computed(() => queueStore.isOnline)
-  const isSyncing = computed(() => queueStore.isSyncing)
-
-  function addToQueue(actionType, data) {
-    queueStore.addToQueue({
-      type: actionType,
-      data
-    })
+  const getDrafts = () => {
+    try {
+      const data = localStorage.getItem(DRAFTS_KEY)
+      return data ? JSON.parse(data) : []
+    } catch (e) {
+      console.error('Failed to parse drafts', e)
+      return []
+    }
   }
 
-  function addProblemToQueue(problemData) {
-    addToQueue('create_problem', problemData)
+  const addProblemToQueue = (problemData) => {
+    const drafts = getDrafts()
+
+    // Убираем файлы из черновика, так как их нельзя сериализовать в JSON
+    const { files, ...dataWithoutFiles } = problemData
+
+    const newDraft = {
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      ...dataWithoutFiles
+    }
+
+    // Добавляем в начало списка
+    drafts.unshift(newDraft)
+
+    // Храним не более 5 черновиков, чтобы не засорять память
+    if (drafts.length > 5) drafts.pop()
+
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts))
   }
 
-  function addMessageToQueue(problemId, content) {
-    addToQueue('send_message', { problemId, content })
+  const removeDraft = (id) => {
+    const drafts = getDrafts().filter(d => d.id !== id)
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts))
   }
 
-  async function syncNow() {
-    await queueStore.processQueue()
-  }
-
-  function retryFailed(itemId) {
-    queueStore.retryItem(itemId)
-  }
-
-  function clearQueue() {
-    queueStore.clearQueue()
-  }
-
-  return {
-    pendingCount,
-    failedCount,
-    isOnline,
-    isSyncing,
-    addToQueue,
-    addProblemToQueue,
-    addMessageToQueue,
-    syncNow,
-    retryFailed,
-    clearQueue
-  }
+  return { getDrafts, addProblemToQueue, removeDraft }
 }

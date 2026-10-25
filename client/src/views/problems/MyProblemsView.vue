@@ -150,20 +150,43 @@ export default {
     },
 
     async loadProblems() {
-      const response = await this.problemsStore.fetchMyProblems({
-        page: this.pagination.page,
-        per_page: this.pagination.per_page,
-        ...this.filters
-      })
+      try {
+        const response = await this.problemsStore.fetchMyProblems({
+          page: this.pagination.page,
+          per_page: this.pagination.per_page,
+          ...this.filters
+        })
 
-      this.problems = response.items || response
-      if (response.total !== undefined) {
-        this.pagination = {
-          page: response.page,
-          per_page: response.per_page,
-          pages: response.pages,
-          total: response.total
+        console.log('[MyProblems] Полный ответ:', response)
+
+        const payload = response?.data ?? response
+
+        console.log("payload", payload)
+        const items = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.items)
+                ? payload.items
+                : []
+
+        this.problems = items
+
+        if (!Array.isArray(payload) && payload) {
+          this.pagination = {
+            page: payload.page ?? 1,
+            per_page: payload.per_page ?? 10,
+            pages: payload.pages ?? 0,
+            total: payload.total ?? items.length
+          }
         }
+
+        console.log('[MyProblems] Загружено обращений:', items.length)
+      } catch (error) {
+        console.error(
+            '[MyProblems] Ошибка загрузки обращений:',
+            error.response?.data ?? error
+        )
+
+        this.problems = []
       }
     },
 

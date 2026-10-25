@@ -16,6 +16,12 @@ export async function getProblems(params = {}) {
   return response.data
 }
 
+export async function getProblemReportAsWord(id) {
+  return api.get(`/problems/${id}/report.docx`, {
+    responseType: 'blob'
+  })
+}
+
 /**
  * Получить проблему по ID
  * @param {number|string} problemId

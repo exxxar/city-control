@@ -40,3 +40,11 @@ class ProblemRead(ProblemBase):
 
     # КРИТИЧЕСКИ ВАЖНО для Pydantic V2 + SQLAlchemy
     model_config = ConfigDict(from_attributes=True)
+
+class ProblemCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    description: Optional[str] = None
+    category_id: int
+    territory_id: Optional[int] = None
+    geo_tag_id: Optional[int] = None
+    priority_id: Optional[int] = None

@@ -1,6 +1,6 @@
 <!-- client/src/views/public/ProblemPublicView.vue -->
 <template>
-  <PublicLayout>
+
     <div class="container py-4">
       <div v-if="isLoading" class="text-center py-5">
         <div class="spinner-border text-civic"></div>
@@ -84,7 +84,7 @@
         <p class="text-muted mt-3">Проблема не найдена</p>
       </div>
     </div>
-  </PublicLayout>
+
 </template>
 
 <script>

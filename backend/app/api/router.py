@@ -14,9 +14,11 @@ from app.api.routes import (
     analytics, audit,
     subscriptions,
     admin_settings,
-     categories,      # <-- ДОБАВЬТЕ
-        help_formats     # <-- ДОБАВЬТЕ
+    issue_categories,      # <-- ДОБАВЬТЕ
+    help_formats     # <-- ДОБАВЬТЕ
 )
+
+from app.api.routes import categories # <-- ДОБАВЛЯЕМ ИМПОРТ
 
 api_router = APIRouter()
 
@@ -71,7 +73,8 @@ api_router.include_router(admin_settings.router, prefix="/admin/settings", tags=
 
 
 # --- Справочники (публичные) ---
-api_router.include_router(categories.router, prefix="/categories", tags=["Directories"])
+api_router.include_router(issue_categories.router, prefix="/issue-categories", tags=["Directories"])
+api_router.include_router(categories.router, prefix="/categories", tags=["Categories"])
 api_router.include_router(help_formats.router, prefix="/help-formats", tags=["Directories"])
 
 api_router.include_router(admin.router)
